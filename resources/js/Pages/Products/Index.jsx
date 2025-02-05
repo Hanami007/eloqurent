@@ -1,8 +1,9 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Link, usePage } from '@inertiajs/inertia-react';
+import { Inertia } from '@inertiajs/inertia';
 
 const Index = ({ products, orders, customers }) => {
-  // รวมข้อมูลสินค้า, การสั่งซื้อ, รายละเอียดการสั่งซื้อ, และลูกค้า
+  // Combine product, order, and customer data
   const combinedData = products.map((product) => {
     const productOrders = orders.filter((order) =>
       order.order_details.some((detail) => detail.product_id === product.id)
@@ -13,7 +14,7 @@ const Index = ({ products, orders, customers }) => {
 
       return {
         ...product,
-        order_id: order.order_id,
+        order_id: order.id,
         customer_name: customer ? customer.name : 'Unknown',
         customer_email: customer ? customer.email : 'N/A',
         order_details: order.order_details.map(detail => {
@@ -24,32 +25,16 @@ const Index = ({ products, orders, customers }) => {
     });
   }).flat(); // flattening the array because we have nested arrays from the orders
 
-  // สร้างข้อมูลสำหรับกราฟ (ใช้ราคาของสินค้าและสต๊อก)
-  const chartData = combinedData.map((item) => ({
-    name: item.name,
-    price: parseFloat(item.price),
-    stock: item.stock,  // เพิ่มข้อมูลสต๊อก
-  }));
+  const handleDelete = (productCode) => {
+    if (confirm('ลบจริงอ่ะ?')) {
+      Inertia.delete(`/products/${productCode}`);
+    }
+  };
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">Product Price and Stock Chart</h1>
-
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          {/* เส้นสำหรับราคา */}
-          <Line type="monotone" dataKey="price" stroke="#8884d8" activeDot={{ r: 8 }} />
-          {/* เส้นสำหรับสต๊อก */}
-          <Line type="monotone" dataKey="stock" stroke="#82ca9d" />
-        </LineChart>
-      </ResponsiveContainer>
-
-      {/* ตารางข้อมูลรวมสินค้า การสั่งซื้อ และลูกค้า */}
+      {/* Combined product, order, and customer data table */}
       <div className="overflow-x-auto bg-white shadow-xl rounded-lg p-6 mb-6">
         <table className="min-w-full table-auto text-sm">
           <thead>
@@ -59,6 +44,7 @@ const Index = ({ products, orders, customers }) => {
               <th className="px-4 py-3 text-left border-b">Stock</th>
               <th className="px-4 py-3 text-left border-b">Order ID</th>
               <th className="px-4 py-3 text-left border-b">Order Details</th>
+              <th className="px-4 py-3 text-left border-b">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -69,6 +55,20 @@ const Index = ({ products, orders, customers }) => {
                 <td className="px-4 py-3 border-b">{row.stock}</td>
                 <td className="px-4 py-3 border-b">{row.order_id}</td>
                 <td className="px-4 py-3 border-b">{row.order_details}</td>
+                <td className="px-4 py-3 border-b">
+                  <Link
+                    href={`/products/${row.id}/edit`}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(row.id)}
+                    className="text-red-500 hover:text-red-700 ml-4"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
