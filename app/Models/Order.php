@@ -11,13 +11,15 @@ class Order extends Model
 
     protected $fillable = ['customer_id', 'total_amount', 'order_date'];
 
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
+    // Define the relationship with OrderDetail model
     public function orderDetails()
     {
         return $this->hasMany(OrderDetail::class);
+    }
+
+    // Define the relationship with Customer model
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 }

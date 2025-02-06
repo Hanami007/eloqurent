@@ -112,7 +112,7 @@ class ProductController extends Controller
                 ->with('error', 'Product update failed');
         }
     }
-    
+
     public function destroy(Product $product)
     {
         try {

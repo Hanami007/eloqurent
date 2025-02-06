@@ -3,73 +3,89 @@ import { Link, usePage } from '@inertiajs/inertia-react';
 import { Inertia } from '@inertiajs/inertia';
 
 const Index = ({ products, orders, customers }) => {
-  // Combine product, order, and customer data
+  // รวมข้อมูลสินค้ากับคำสั่งซื้อและลูกค้า
   const combinedData = products.map((product) => {
     const productOrders = orders.filter((order) =>
       order.order_details.some((detail) => detail.product_id === product.id)
     );
 
-    return productOrders.map((order) => {
+    const orderDetails = productOrders.map((order) => {
       const customer = customers.find((customer) => customer.id === order.customer_id);
-
       return {
-        ...product,
         order_id: order.id,
         customer_name: customer ? customer.name : 'Unknown',
-        customer_email: customer ? customer.email : 'N/A',
-        order_details: order.order_details.map(detail => {
-          return `Product ID: ${detail.product_id} - Quantity: ${detail.quantity} - Price: ${detail.price}`;
-        }).join(', '),
+        order_info: order.order_details
+          .filter((detail) => detail.product_id === product.id)
+          .map(detail => `Qty: ${detail.quantity}, Price: ${detail.price}`)
+          .join(' | '),
         total_amount: order.order_details.reduce((total, detail) => total + (detail.price * detail.quantity), 0).toFixed(2)
       };
     });
-  }).flat(); // flattening the array because we have nested arrays from the orders
 
-  const handleDelete = (productCode) => {
-    if (confirm('ลบจริงอ่ะ?')) {
-      Inertia.delete(`/products/${productCode}`);
+    return {
+      ...product,
+      orders: orderDetails,
+    };
+  });
+
+  const handleDelete = (productId) => {
+    if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?')) {
+      Inertia.delete(`/products/${productId}`);
     }
   };
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">Product Price and Stock Chart</h1>
-      {/* Combined product, order, and customer data table */}
+      <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
+        รายการสินค้าและคำสั่งซื้อ
+      </h1>
+
       <div className="overflow-x-auto bg-white shadow-xl rounded-lg p-6 mb-6">
-        <table className="min-w-full table-auto text-sm">
+        <table className="min-w-full table-auto text-sm border-collapse">
           <thead>
             <tr className="bg-gray-200 text-gray-700">
-              <th className="px-4 py-3 text-left border-b">Product Name</th>
-              <th className="px-4 py-3 text-left border-b">Price</th>
-              <th className="px-4 py-3 text-left border-b">Stock</th>
+              <th className="px-4 py-3 text-left border-b">ชื่อสินค้า</th>
+              <th className="px-4 py-3 text-left border-b">ราคา</th>
+              <th className="px-4 py-3 text-left border-b">สต็อก</th>
               <th className="px-4 py-3 text-left border-b">Order ID</th>
-              <th className="px-4 py-3 text-left border-b">Order Details</th>
+              <th className="px-4 py-3 text-left border-b">ชื่อลูกค้า</th>
+              <th className="px-4 py-3 text-left border-b">รายละเอียดคำสั่งซื้อ</th>
               <th className="px-4 py-3 text-left border-b">Actions</th>
             </tr>
           </thead>
           <tbody>
             {combinedData.map((row, index) => (
-              <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                <td className="px-4 py-3 border-b">{row.name}</td>
-                <td className="px-4 py-3 border-b">{row.price}</td>
-                <td className="px-4 py-3 border-b">{row.stock}</td>
-                <td className="px-4 py-3 border-b">{row.order_id}</td>
-                <td className="px-4 py-3 border-b">{row.order_details}</td>
-                <td className="px-4 py-3 border-b">
-                  <Link
-                    href={`/products/${row.id}/edit`}
-                    className="text-blue-500 hover:text-blue-700"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(row.id)}
-                    className="text-red-500 hover:text-red-700 ml-4"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+              row.orders.map((order, orderIndex) => (
+                <tr key={`${index}-${orderIndex}`} className="hover:bg-gray-50 transition-colors duration-200 border-b">
+                  <td className="px-4 py-3">{row.name}</td>
+                  <td className="px-4 py-3">{row.price}</td>
+                  <td className="px-4 py-3">{row.stock}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/orders/${order.order_id}`}
+                      className="text-blue-500 hover:underline"
+                    >
+                      #{order.order_id}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3">{order.customer_name}</td>
+                  <td className="px-4 py-3">{order.order_info}</td>
+                  <td className="px-4 py-3 flex gap-3">
+                    <Link
+                      href={`/products/${row.id}/edit`}
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                    >
+                      แก้ไข
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(row.id)}
+                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                    >
+                      ลบ
+                    </button>
+                  </td>
+                </tr>
+              ))
             ))}
           </tbody>
         </table>
