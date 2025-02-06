@@ -22,34 +22,30 @@ class ProductController extends Controller
         $customers = Customer::all();
 
         return Inertia::render('Products/Index', [
-            'products' => $products->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'Pname' => $product->name,
-                    'price' => $product->price,
-                    'stock' => $product->stock,
-                ];
-            }),
-            'orders' => $orders->map(function ($order) {
-                return [
-                    'order_id' => $order->id,
-                    'customer_id' => $order->customer_id, // เพิ่ม customer_id
-                    'order_details' => $order->orderDetails->map(function ($detail) {
-                        return [
-                            'product_id' => $detail->product_id,
-                            'quantity' => $detail->quantity,
-                            'price' => $detail->price,
-                        ];
-                    }),
-                ];
-            }),
-            'customers' => $customers->map(function ($customer) {
-                return [
-                    'id' => $customer->id,
-                    'Cname' => $customer->name,
-                    'email' => $customer->email,
-                ];
-            }),
+            'products' => $products->map(fn($product) => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'stock' => $product->stock,
+                'descriptions' => $product->description,
+                'timestamp' => $product->created_at->timestamp,
+                'date' => $product->created_at->format('Y-m-d'),
+            ]),
+            'orders' => $orders->map(fn($order) => [
+                'order_id' => $order->id,
+                'customer_id' => $order->customer_id,
+                'order_details' => $order->orderDetails->map(fn($detail) => [
+                    'product_id' => $detail->product_id,
+                    'quantity' => $detail->quantity,
+                    'price' => $detail->price,
+                ]),
+            ]),
+            'customers' => $customers->map(fn($customer) => [
+                'id' => $customer->id,
+                'Cname' => $customer->name,
+                'email' => $customer->email,
+            ]),
+            'success' => session('success'), // ✅ ส่ง success ไปที่หน้า React
         ]);
     }
 
@@ -63,49 +59,34 @@ class ProductController extends Controller
         // Validate the request data
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-            'order_details' => 'required|array',
-            'order_details.*.customer_id' => 'required|exists:customers,id',
-            'order_details.*.quantity' => 'required|integer',
-            'order_details.*.price' => 'required|numeric',
+            'description' => 'nullable|string|max:255',
+            'price' => 'required|numeric|max:999999.99',
+            'stock' => 'required|integer|max:9999',
         ]);
 
         try {
             // Use a database transaction for data integrity
             DB::transaction(function () use ($validated) {
                 // Create the product
-                $product = Product::create([
+                Product::create([
                     'name' => $validated['name'],
                     'description' => $validated['description'],
                     'price' => $validated['price'],
                     'stock' => $validated['stock'],
                 ]);
-
-                // Create the order and order details
-                foreach ($validated['order_details'] as $detail) {
-                    $order = Order::create([
-                        'customer_id' => $detail['customer_id'],
-                    ]);
-
-                    $order->orderDetails()->create([
-                        'product_id' => $product->id,
-                        'quantity' => $detail['quantity'],
-                        'price' => $detail['price'],
-                    ]);
-                }
             });
 
             return redirect()->route('products.index')
-                ->with('success', 'Product and order details created successfully.');
+                ->with('success', 'Product created successfully.');
         } catch (\Exception $e) {
-            Log::error('Product creation failed: ' . $e->getMessage());
+            Log::error($e->getMessage());
 
-            return Redirect::back()->withErrors(['error' => 'An error occurred while creating the product. Please try again.'])
-                ->withInput();
+            return redirect()->route('products.index')
+                ->with('error', 'An error occurred while creating the product.');
         }
     }
+
+
     public function edit(Product $product)
     {
         return Inertia::render('Products/Edit', ['product' => $product]);

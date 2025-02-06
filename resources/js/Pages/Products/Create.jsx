@@ -7,9 +7,7 @@ export default function Create({ flash }) {
     description: "",
     price: "",
     stock: "",
-    order_id: "",
-    customer_name: "",
-    order_details: "",
+    order_details: [{ customer_id: "", quantity: "", price: "" }],
   });
 
   const [successMessage, setSuccessMessage] = useState(flash.success);
@@ -39,13 +37,15 @@ export default function Create({ flash }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(data);  // ตรวจสอบข้อมูลที่ส่งไป
     post(route("products.store"));
-  };
+};
+
 
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold text-center mb-6">
-        🆕 เพิ่มสินค้า / คำสั่งซื้อ
+        🆕 เพิ่มสินค้า
       </h2>
 
       {successMessage && (
@@ -108,54 +108,6 @@ export default function Create({ flash }) {
             <span className="text-red-500 text-sm">{errors.stock}</span>
           )}
         </div>
-
-        {/* Order ID */}
-        <div>
-          <label className="block text-gray-700 font-medium">
-            🛒 Order ID
-          </label>
-          <input
-            type="text"
-            value={data.order_id}
-            onChange={(e) => setData("order_id", e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {errors.order_id && (
-            <span className="text-red-500 text-sm">{errors.order_id}</span>
-          )}
-        </div>
-
-        {/* ชื่อลูกค้า */}
-        <div>
-          <label className="block text-gray-700 font-medium">
-            👤 ชื่อลูกค้า
-          </label>
-          <input
-            type="text"
-            value={data.customer_name}
-            onChange={(e) => setData("customer_name", e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {errors.customer_name && (
-            <span className="text-red-500 text-sm">{errors.customer_name}</span>
-          )}
-        </div>
-
-        {/* รายละเอียดคำสั่งซื้อ */}
-        <div>
-          <label className="block text-gray-700 font-medium">
-            📃 รายละเอียดคำสั่งซื้อ
-          </label>
-          <textarea
-            value={data.order_details}
-            onChange={(e) => setData("order_details", e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {errors.order_details && (
-            <span className="text-red-500 text-sm">{errors.order_details}</span>
-          )}
-        </div>
-
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
