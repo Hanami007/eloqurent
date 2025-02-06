@@ -8,6 +8,8 @@ use App\Models\Order;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 class ProductController extends Controller
 {
     /**
@@ -23,7 +25,7 @@ class ProductController extends Controller
             'products' => $products->map(function ($product) {
                 return [
                     'id' => $product->id,
-                    'name' => $product->name,
+                    'Pname' => $product->name,
                     'price' => $product->price,
                     'stock' => $product->stock,
                 ];
@@ -31,7 +33,7 @@ class ProductController extends Controller
             'orders' => $orders->map(function ($order) {
                 return [
                     'order_id' => $order->id,
-                    'customer_name' => $order->customer->name ?? 'Unknown',
+                    'customer_id' => $order->customer_id, // เพิ่ม customer_id
                     'order_details' => $order->orderDetails->map(function ($detail) {
                         return [
                             'product_id' => $detail->product_id,
@@ -44,7 +46,7 @@ class ProductController extends Controller
             'customers' => $customers->map(function ($customer) {
                 return [
                     'id' => $customer->id,
-                    'name' => $customer->name,
+                    'Cname' => $customer->name,
                     'email' => $customer->email,
                 ];
             }),
@@ -58,28 +60,50 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        // Validate the request data
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
+            'order_details' => 'required|array',
+            'order_details.*.customer_id' => 'required|exists:customers,id',
+            'order_details.*.quantity' => 'required|integer',
+            'order_details.*.price' => 'required|numeric',
         ]);
 
         try {
-            Product::create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'price' => $request->price,
-                'stock' => $request->stock,
-            ]);
+            // Use a database transaction for data integrity
+            DB::transaction(function () use ($validated) {
+                // Create the product
+                $product = Product::create([
+                    'name' => $validated['name'],
+                    'description' => $validated['description'],
+                    'price' => $validated['price'],
+                    'stock' => $validated['stock'],
+                ]);
+
+                // Create the order and order details
+                foreach ($validated['order_details'] as $detail) {
+                    $order = Order::create([
+                        'customer_id' => $detail['customer_id'],
+                    ]);
+
+                    $order->orderDetails()->create([
+                        'product_id' => $product->id,
+                        'quantity' => $detail['quantity'],
+                        'price' => $detail['price'],
+                    ]);
+                }
+            });
 
             return redirect()->route('products.index')
-                ->with('success', 'Product created successfully');
+                ->with('success', 'Product and order details created successfully.');
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
+            Log::error('Product creation failed: ' . $e->getMessage());
 
-            return redirect()->route('products.index')
-                ->with('error', 'Product creation failed');
+            return Redirect::back()->withErrors(['error' => 'An error occurred while creating the product. Please try again.'])
+                ->withInput();
         }
     }
     public function edit(Product $product)
