@@ -36,6 +36,7 @@ class ProductController extends Controller
                         return [
                             'product_id' => $detail->product_id,
                             'quantity' => $detail->quantity,
+                            'price' => $detail->price,
                         ];
                     }),
                 ];
