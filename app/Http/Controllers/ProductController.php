@@ -58,10 +58,10 @@ class ProductController extends Controller
     {
         // Validate the request data
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
-            'price' => 'required|numeric|max:999999.99',
-            'stock' => 'required|integer|max:9999',
+            'price' => 'required|numeric|max:999999.99|min:0',
+            'stock' => 'required|integer|max:9999|min:0',
         ]);
 
         try {
@@ -95,10 +95,10 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string|max:255',
+            'price' => 'required|numeric|max:999999.99|min:0',
+            'stock' => 'required|integer|max:9999|min:0',
         ]);
 
         try {

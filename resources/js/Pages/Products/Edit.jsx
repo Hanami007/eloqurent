@@ -61,43 +61,6 @@ const Edit = ({ product, orders, customers }) => {
             {errors.stock && <div className="text-red-500 text-sm mt-1">{errors.stock}</div>}
           </div>
 
-          {/* Order ID */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2" htmlFor="order_id">🛒 Order ID</label>
-            <input
-              type="text"
-              id="order_id"
-              value={data.order_id}
-              onChange={(e) => setData('order_id', e.target.value)}
-              className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            />
-            {errors.order_id && <div className="text-red-500 text-sm mt-1">{errors.order_id}</div>}
-          </div>
-
-          {/* ชื่อลูกค้า */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2" htmlFor="customer_name">👤 ชื่อลูกค้า</label>
-            <input
-              type="text"
-              id="customer_name"
-              value={data.customer_name}
-              onChange={(e) => setData('customer_name', e.target.value)}
-              className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            />
-            {errors.customer_name && <div className="text-red-500 text-sm mt-1">{errors.customer_name}</div>}
-          </div>
-
-          {/* รายละเอียดคำสั่งซื้อ */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2" htmlFor="order_details">📃 รายละเอียดคำสั่งซื้อ</label>
-            <textarea
-              id="order_details"
-              value={data.order_details}
-              onChange={(e) => setData('order_details', e.target.value)}
-              className="w-full p-3 border rounded h-24 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            />
-            {errors.order_details && <div className="text-red-500 text-sm mt-1">{errors.order_details}</div>}
-          </div>
 
           {/* ปุ่มอัปเดต */}
           <div className="text-center">

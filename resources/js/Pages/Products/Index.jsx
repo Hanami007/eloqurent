@@ -53,7 +53,7 @@ const Index = ({ products }) => {
                             <th className="p-4 text-left border-b">📦 ชื่อสินค้า</th>
                             <th className="p-4 text-left border-b">💰 ราคา</th>
                             <th className="p-4 text-left border-b">📊 สต็อก</th>
-                            <th className="p-4 text-left border-b">📅 วันที่สั่ง</th>
+                            <th className="p-4 text-left border-b">📅 วันที่เพิ่มข้อมุล</th>
                             <th className="p-4 text-left border-b">⚙️ จัดการ</th>
                         </tr>
                     </thead>
