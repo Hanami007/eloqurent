@@ -6,13 +6,19 @@ const Index = ({ products }) => {
     console.log("Products:", products);
 
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
     const itemsPerPage = 10;
 
-    // หาจำนวนหน้าทั้งหมด
-    const totalPages = Math.ceil(products.length / itemsPerPage);
+    // Filter products based on search query
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-    // ตัดข้อมูลให้เหลือแค่ 10 รายการตามหน้าปัจจุบัน
-    const paginatedProducts = products.slice(
+    // Calculate total pages based on filtered products
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+    // Paginate filtered products
+    const paginatedProducts = filteredProducts.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
@@ -28,6 +34,17 @@ const Index = ({ products }) => {
             <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
                 📊 รายการสินค้า
             </h1>
+
+            {/* Search Bar */}
+            <div className="mb-4">
+                <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="ค้นหาสินค้า..."
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
 
             <div className="overflow-x-auto bg-white shadow-xl rounded-lg p-6 mt-4">
                 <table className="w-full table-auto border border-gray-300">
